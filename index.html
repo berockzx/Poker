@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Spixi Poker (Texas Light)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Press Start 2P', monospace;
+      background-color: #1a1a1a;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    .table {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .cards {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .card {
+      width: 60px;
+      height: 90px;
+      border: 2px solid #fff;
+      background: #2e7d32;
+      color: #fff;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 2px 2px 0 #000;
+    }
+    .actions {
+      margin-top: 20px;
+    }
+    button {
+      font-family: 'Press Start 2P', monospace;
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 12px;
+      cursor: pointer;
+      background: #2980b9;
+      border: none;
+      color: white;
+    }
+    #status {
+      margin-top: 10px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>Spixi Poker</h1>
+  <div id="game" class="table">
+    <div id="player-hand" class="cards"></div>
+    <div id="community-cards" class="cards"></div>
+    <div class="actions">
+      <button onclick="sendAction('check')">CHECK</button>
+      <button onclick="sendAction('raise')">RAISE</button>
+      <button onclick="sendAction('fold')">FOLD</button>
+    </div>
+    <div id="status">Waiting for opponent...</div>
+  </div>
+  <script>
+    const playerHand = document.getElementById("player-hand");
+    const communityCards = document.getElementById("community-cards");
+    const status = document.getElementById("status");
+
+    async function initGame() {
+      const res = await fetch("/backend/init", { method: "POST" });
+      const data = await res.json();
+
+      if (!data.success) {
+        status.innerText = data.message;
+        return;
+      }
+
+      playerHand.innerHTML = data.player_hand.map(c => `<div class="card">${c}</div>`).join("");
+      communityCards.innerHTML = data.community.map(c => `<div class="card">${c}</div>`).join("");
+      status.innerText = "Your turn: choose an action.";
+    }
+
+    async function sendAction(action) {
+      const res = await fetch("/backend/action", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+      });
+      const data = await res.json();
+      if (data.status === "wait") {
+        status.innerText = "Waiting for opponent...";
+      } else if (data.status === "win") {
+        status.innerText = "You won! 180 IXI sent to your wallet.";
+      } else if (data.status === "lose") {
+        status.innerText = "You lost. Try again!";
+      } else {
+        status.innerText = "Action submitted. Waiting...";
+      }
+    }
+
+    initGame();
+  </script>
+</body>
+</html>

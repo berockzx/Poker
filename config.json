@@ -1,0 +1,11 @@
+{
+  "name": "Spixi Poker",
+  "packageId": "spixi.poker",
+  "version": "1.0.0",
+  "description": "Texas Hold'em light poker game with IXI deposit and payout integration",
+  "iconUrl": "/icon.png",
+  "main": "/index.html",
+  "backend": "/backend.js",
+  "permissions": ["wallet", "network"],
+  "entryPoint": "index.html"
+}
